@@ -9,7 +9,17 @@ window.requestAnimationFrame = function() {
 	}
 }();
 
+window.cancelRequestAnimFrame = ( function() {
+    return window.cancelAnimationFrame          ||
+        window.webkitCancelRequestAnimationFrame    ||
+        window.mozCancelRequestAnimationFrame       ||
+        window.oCancelRequestAnimationFrame     ||
+        window.msCancelRequestAnimationFrame        ||
+        clearTimeout
+} )();
+
 var animationFrame = (function () {
+	var func = {} ; 
 	function animationFrame ( fps , callback ) {
 		var fps = fps
 		,	now
@@ -25,6 +35,7 @@ var animationFrame = (function () {
 		var first = then ; 
 
 		function draw () {
+			func.draw = arguments.callee ; 
 			if ( !self.loop ) return ; 
 			window.requestAnimationFrame( draw ) ; 
 
@@ -44,7 +55,9 @@ var animationFrame = (function () {
 				obj = {
 					counter : self.counter + 'f' , 
 					time_el :  Math.ceil(time_el) + 's' , 
-					fps : Math.ceil( self.counter / time_el ) + ' fps'
+					fps : Math.ceil( self.counter / time_el ) + ' fps' , 
+					interval : parseInt( interval ) , 
+					lag : parseInt( delta % interval ) 
 				} ; 
 
 				callback( obj ) ; 
@@ -58,6 +71,7 @@ var animationFrame = (function () {
 		stop : function () {
 			this.loop = false ; 
 			this.counter = 0 ; 
+			window.cancelRequestAnimFrame( func.draw ) ; 
 		}
 	} ; 
 
